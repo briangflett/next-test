@@ -1,0 +1,28 @@
+import type { Metadata } from "next";
+
+import { GameProvider, StatusProvider } from "./game-context";
+
+import { clearGame } from "./actions";
+
+export const metadata: Metadata = {
+  title: "Kuhn",
+  description: "Kuhn",
+};
+
+export const dynamic = "force-dynamic"; // not sure I need this
+
+export default async function GameLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const game = await clearGame();
+  const status = "1-build-key";
+  // 1-build-key, 2-get-scenario, 3-display-strategy, 4-other
+
+  return (
+    <GameProvider game={game}>
+      <StatusProvider status={status}>{children}</StatusProvider>
+    </GameProvider>
+  );
+}

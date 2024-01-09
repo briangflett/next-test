@@ -1,0 +1,77 @@
+"use client";
+import { createContext, useContext, useState } from "react";
+import { Game } from "./definitions";
+import { getScenarioResult } from "./actions";
+
+const useGameState = (initialGame: Game) => useState<Game>(initialGame);
+const useStatusState = (initialStatus: string) =>
+  useState<string>(initialStatus);
+
+export const GameContext = createContext<ReturnType<
+  typeof useGameState
+> | null>(null);
+export const StatusContext = createContext<ReturnType<
+  typeof useStatusState
+> | null>(null);
+
+export const useGame = () => {
+  const game2 = useContext(GameContext);
+  // console.log("useGame: game = ", game2);
+  // debugger;
+  if (!game2) {
+    throw new Error("useGame must be used within a GameProvider");
+  }
+  return game2;
+};
+export const useStatus = () => {
+  const status = useContext(StatusContext);
+  // console.log("useStatus: status = ", status);
+  // debugger;
+  if (!status) {
+    throw new Error("useStatus must be used within a StatusProvider");
+  }
+  return status;
+};
+
+export const GameProvider = ({
+  game: initialGame,
+  children,
+}: {
+  game: Game;
+  children: React.ReactNode;
+}) => {
+  const [game, setGame] = useGameState(initialGame);
+
+  // Fetch data asynchronously
+  const fetchData = async () => {
+    try {
+      const scenarioResult = await getScenarioResult(game);
+      if (scenarioResult) {
+        setGame({ ...game, scenarioResult });
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  return (
+    <GameContext.Provider value={[game, setGame]}>
+      {children}
+    </GameContext.Provider>
+  );
+};
+export const StatusProvider = ({
+  status: initialStatus,
+  children,
+}: {
+  status: string;
+  children: React.ReactNode;
+}) => {
+  const [status, setStatus] = useStatusState(initialStatus);
+
+  return (
+    <StatusContext.Provider value={[status, setStatus]}>
+      {children}
+    </StatusContext.Provider>
+  );
+};
